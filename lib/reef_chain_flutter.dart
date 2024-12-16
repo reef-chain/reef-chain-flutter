@@ -269,12 +269,6 @@ Page resource error:
           }
         },
       ),
-      JsChannParam(
-        name: 'Toaster',
-        onMessageReceived: (JavaScriptMessage message) {
-          debugPrint(message as String?);
-        },
-      )
     };
   }
 
