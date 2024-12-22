@@ -72,6 +72,7 @@ class JsApiService {
       String html, String? baseUrl, Function()? onErrorCb)
       : this._('lib/js/packages/dApp-js/dist/index.js',
       html: html, url: baseUrl, onErrorCb: onErrorCb);
+      
 
   WebViewController _createController() {
     late final PlatformWebViewControllerCreationParams params;
@@ -200,9 +201,214 @@ Page resource error:
         '${TX_SIGN_CONFIRMATION_JS_FN_NAME}("$reqId", "${mnemonic ?? ''}")');
   }
 
+  //accounts controllers
+  Future<String> generateAccount() async {
+    return await jsPromise('window.keyring.generate()');
+  }
+
+  Future<dynamic> restoreJson(
+      Map<String, dynamic> file, String password) async {
+    return await _jsApi.jsPromise(
+        'window.keyring.restoreJson(${jsonEncode(file)},"$password")');
+  }
+
+  Future<String> formatBalance(
+      String value, double price) async {
+        try {   
+    return await jsPromise(
+        'window.keyring.formatBalance("$value",$price)');
+        } catch (e) {
+          print('window.keyring.formatBalance ERR=$e');
+          return "";
+        }
+  }
+
+  Future<void> setSelectedAddress(String address) {
+    return jsCallVoidReturn('window.reefState.setSelectedAddress("$address")');
+  }
+
+    Future<dynamic> changeAccountPassword(
+      String address, String newPass, String oldPass) async {
+    return await jsPromise(
+        'window.keyring.changeAccountPassword("$address","$newPass","$oldPass")');
+  }
+
+    Future<dynamic> accountsCreateSuri(String mnemonic, String password) async {
+    return await jsPromise(
+        'window.keyring.accountsCreateSuri("$mnemonic","$password")');
+  }
+
+  Future<bool> checkMnemonicValid(String mnemonic) async {
+    var isValid = await jsPromise('window.keyring.checkMnemonicValid("$mnemonic")');
+    return isValid == 'true';
+  }
+
+  Future<dynamic> resolveEvmAddress(String nativeAddress) async {
+    return await jsPromise('window.account.resolveEvmAddress("$nativeAddress")');
+  }
+
+ Future<String> accountFromMnemonic(String mnemonic) async {
+    return await jsPromise('window.keyring.accountFromMnemonic("$mnemonic")');
+  }
+
+ Future<dynamic> bindEvmAccount(String address) async {
+    return jsPromise('window.account.claimEvmAccount("$address")');
+  }
+
+ Future<bool> isValidEvmAddress(String address) async {
+    return await jsCall<bool>('window.account.isValidEvmAddress("$address")');
+  }
+
+    Future<bool> isValidSubstrateAddress(String address) async {
+    return await jsCall<bool>(
+            'window.account.isValidSubstrateAddress("$address")');
+  }
+
+  Future<String?> resolveToNativeAddress(String evmAddress) async {
+    return await jsPromise('window.account.resolveFromEvmAddress("$evmAddress")');
+  }
+
+  Future<String> sanitizeEvmAddress(String evmAddress) async{
+    return await jsPromise('window.utils.sanitizeInput("$evmAddress")');
+  }
+
+   void _initWasm(JsApiService _jsApi) async {
+    await jsPromise('window.keyring.initWasm()');
+  }
+
+  Future<dynamic> toReefEVMAddressWithNotificationString(String evmAddress) async {
+    return await jsCall(
+        'window.account.toReefEVMAddressWithNotification("$evmAddress")');
+  }
+
+  toReefEVMAddressNoNotificationString(String evmAddress) async {
+    return await jsCall('window.account.toReefEVMAddressNoNotification("$evmAddress")');
+  }
+
+
   void sendDappMsgResponse(String reqId, dynamic value) {
     jsCall('${DAPP_MSG_CONFIRMATION_JS_FN_NAME}(`$reqId`, `$value`)');
   }
+
+  //firebase
+    Map<String,String>? firebase_config;
+
+  void initFirebaseConfig(){ // need to call this first before logging analytics
+    firebase_config ={
+      'apiKey': const String.fromEnvironment("FIREBASE_API_KEY", defaultValue: ""),
+      'authDomain': const String.fromEnvironment("FIREBASE_AUTH_DOMAIN", defaultValue: ""),
+      'projectId':  const String.fromEnvironment("FIREBASE_PROJECT_ID", defaultValue: ""),
+      'storageBucket': const String.fromEnvironment("FIREBASE_STORAGE_BUCKET", defaultValue: ""),
+      'messagingSenderId': const String.fromEnvironment("FIREBASE_MESSAGING_SENDER_ID", defaultValue: ""),
+      'appId': const String.fromEnvironment("FIREBASE_APP_ID", defaultValue: ""),
+      'measurementId': const String.fromEnvironment("FIREBASE_MEASUREMENT_ID", defaultValue: ""),
+    };
+  }
+
+  Future<dynamic> logAnalytics(String eventName) async {
+    await jsCallVoidReturn(
+        'window.firebase.logFirebaseAnalytic(${jsonEncode(firebase_config)},"$eventName")');
+  }
+
+  //metadata 
+  Future<dynamic> getMetadata() => jsPromise('window.metadata.getMetadata();');
+
+  Future<dynamic> getJsVersions() => jsCall('window.getReefJsVer();');
+
+    Future<bool> isJsConn() => jsCall('window.isJsConn();').then((value) {
+        if (kDebugMode) {
+          print('JS CONN=$value');
+        }
+        return resolveBooleanValue(value);
+      }).onError((error, stackTrace) => false);
+
+  //network
+
+  Future<void> setNetwork(Network network,dynamic cb) async {
+    cb(); //callback
+    jsCallVoidReturn('window.utils.setSelectedNetwork(`${network.name}`)');
+  }
+
+  //signing
+
+  Future<dynamic> signRaw(String address, String message) =>
+      jsPromise('window.signApi.signRawPromise(`$address`, `$message`);');
+
+  Future<dynamic> signPayload(String address, Map<String, dynamic> payload) =>
+      jsPromise(
+          'window.signApi.signPayloadPromise(`$address`, ${jsonEncode(payload)})');
+
+  Future<dynamic> decodeMethod(String data, {dynamic types})=>types==null?jsPromise('window.utils.decodeMethod(`$data`)') : jsPromise('window.utils.decodeMethod(`$data`, ${jsonEncode(types)})');
+
+  Future<dynamic> bytesString(String bytes) => jsPromise('window.utils.bytesString("$bytes")');
+
+  //stealthex
+   Future<dynamic> listCurrencies() async {
+   return await jsPromise(
+        'window.stealthex.listCurrencies()');
+  }
+
+   Future<dynamic> getEstimatedExchange(String sourceChain,String sourceNetwork,double amount) async {
+   return await jsPromise(
+        'window.stealthex.getEstimatedExchange("${sourceChain}","${sourceNetwork}",${amount})');
+  }
+
+   Future<dynamic> getExchangeRange(String fromSymbol,String fromNetwork) async {
+   return await jsPromise(
+        'window.stealthex.getExchangeRange("${fromSymbol}","${fromNetwork}")');
+  }
+   Future<dynamic> createExchange(String fromSymbol,String fromNetwork,String toSymbol,String toNetwork,double amount,String address) async {
+   return await jsPromise(
+        'window.stealthex.createExchange("${fromSymbol}","${fromNetwork}","${toSymbol}","${toNetwork}",${amount},"${address}")');
+  }
+
+   Future<dynamic> setTransactionHash(String id,String tx_hash) async {
+   return await jsPromise(
+        'window.stealthex.setTransactionHash("${id}","${tx_hash}")');
+  }
+
+  //pools
+  Future<List<dynamic>>fetchPools()async{
+    return await jsPromise('window.utils.getPools(10,0,"","")');
+  }
+
+   Future<dynamic> getPools(dynamic offset,String search) async {
+    return jsPromise('window.utils.getPools(10,${offset},"${search}","")');
+  }
+
+  //swap 
+    Future<dynamic> getPoolReserves(
+      String token1Address, String token2Address) async {
+    return jsPromise('window.swap.getPoolReserves("$token1Address", "$token2Address")');
+  }
+
+  //tokens
+    Future<dynamic> findToken(String address) async {
+    return jsPromise('window.utils.findToken("$address")');
+  }
+
+  Future<dynamic> getTxInfo(String timestamp) async {
+    return jsPromise('window.utils.getTxInfo("$timestamp")');
+  }
+
+  Future<dynamic> getPools(dynamic offset) async {
+    return jsPromise('window.utils.getPools(10,${offset},"","")');
+  }
+
+  Future<dynamic> getPoolPairs(String tokenAddress) async {
+    return jsPromise('window.utils.getPoolPairs("${tokenAddress}")');
+  }
+  Future<dynamic> getTokenInfo(String tokenAddress) async {
+    return jsPromise('window.utils.getTokenInfo("${tokenAddress}")');
+  }
+
+  //transfer
+  Future<dynamic> transferTokens(
+      String fromAddress, String toAddress, TokenWithAmount token) async {
+    return jsPromise(
+        'window.transfer.sendPromise("$fromAddress", "$toAddress", "${token.amount.toString()}", ${token.decimals}, "${token.address}")');
+  }
+
 
   Future<String> _getFlutterJsHeaderTags(String assetsFilePath) async {
     var jsScript = await rootBundle.loadString(assetsFilePath, cache: true);
