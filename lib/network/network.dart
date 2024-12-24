@@ -1,0 +1,4 @@
+enum ReefNetowrk {
+  mainnet,
+  testnet
+}
