@@ -20,3 +20,7 @@ widget.reefJsApiService.jsCall("window.isJsConn()").then((v)=>debugPrint(v.toStr
 widget.reefJsApiService.jsPromise("window.futureFn(\"fltrrr\")").then((v)=>debugPrint(v.toString()));
 widget.reefJsApiService.jsObservable("window.testObs()").listen((v)=>debugPrint(v.toString()));
 ```
+
+## Example App Repo
+
+https://github.com/reef-chain/reef-flutter-lib-example-app
