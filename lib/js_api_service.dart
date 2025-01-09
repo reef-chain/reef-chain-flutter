@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:rxdart/rxdart.dart';
@@ -47,7 +47,7 @@ class JsApiService {
 
   late Function()? onJsConnectionError;
 
-  JsApiService._( String this.flutterJsFilePath,
+  JsApiService._(String this.flutterJsFilePath,
       {String? url, String? html, Function()? onErrorCb}) {
     // #docregion platform_features
     var ctrl = _createController();
@@ -60,18 +60,18 @@ class JsApiService {
     this.onJsConnectionError = onErrorCb;
   }
 
-  JsApiService.customJsApi(String assetsJsPath, { String? host, Function()? onErrorCb})
-      : this._(assetsJsPath,
-      url: host, onErrorCb: onErrorCb);
+  JsApiService.customJsApi(String assetsJsPath,
+      {String? host, Function()? onErrorCb})
+      : this._(assetsJsPath, url: host, onErrorCb: onErrorCb);
 
   JsApiService.reefAppJsApi({Function()? onErrorCb})
       : this._('lib/js/packages/reef-mobile-js/dist/index.js',
-      url: 'https://app.reef.io', onErrorCb: onErrorCb);
+            url: 'https://app.reef.io', onErrorCb: onErrorCb);
 
   JsApiService.dAppInjectedHtml(
       String html, String? baseUrl, Function()? onErrorCb)
       : this._('lib/js/packages/dApp-js/dist/index.js',
-      html: html, url: baseUrl, onErrorCb: onErrorCb);
+            html: html, url: baseUrl, onErrorCb: onErrorCb);
 
   WebViewController _createController() {
     late final PlatformWebViewControllerCreationParams params;
@@ -239,12 +239,22 @@ Page resource error:
 
   void _renderHtml(
       WebViewController ctrl, String htmlString, String? baseUrl) async {
-    ctrl
-        .loadHtmlString(htmlString, baseUrl: baseUrl)
-        .then((value) => ctrl)
-        .catchError((err) {
-      debugPrint('Error loading HTML=$err');
-    });
+    if (Platform.isIOS &&
+        Platform.operatingSystemVersion.indexOf("Version 16.0") >= 0) {
+      ctrl
+          .loadFlutterAsset("lib/js/packages/reef-mobile-js/dist/index.js")
+          .then((value) => ctrl)
+          .catchError((err) {
+        debugPrint('Error loading HTML=$err');
+      });
+    } else {
+      ctrl
+          .loadHtmlString(htmlString, baseUrl: baseUrl)
+          .then((value) => ctrl)
+          .catchError((err) {
+        debugPrint('Error loading HTML=$err');
+      });
+    }
   }
 
   Set<JsChannParam> _getJavascriptChannels() {
@@ -253,7 +263,7 @@ Page resource error:
         name: REEF_MOBILE_CHANNEL_NAME,
         onMessageReceived: (message) {
           JsApiMessage apiMsg =
-          JsApiMessage.fromJson(jsonDecode(message.message));
+              JsApiMessage.fromJson(jsonDecode(message.message));
           if (apiMsg.streamId == LOG_STREAM_ID) {
             print('$LOG_STREAM_ID= ${apiMsg.value}');
           } else if (apiMsg.streamId == API_READY_STREAM_ID) {
