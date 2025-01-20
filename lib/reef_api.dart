@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:reef_chain_flutter/network/network.dart';
 import 'package:reef_chain_flutter/reef_state/account/account.dart';
 import 'package:reef_chain_flutter/reef_state/account_api.dart';
+import 'package:reef_chain_flutter/reef_state/firebase_api.dart';
+import 'package:reef_chain_flutter/reef_state/metadata_api.dart';
 import 'package:reef_chain_flutter/reef_state/network_api.dart';
 import 'package:reef_chain_flutter/reef_state/pools_api.dart';
 import 'package:reef_chain_flutter/reef_state/signing_api.dart';
@@ -56,6 +58,8 @@ class ReefStateApi {
   late final TransferApi transferApi;
   late final SwapApi swapApi;
   late final SigningApi signingApi;
+  late final FirebaseApi firebaseApi;
+  late final MetadataApi metadataApi;
 
   ReefStateApi(this._jsApi) {
     tokenApi = TokensApi(_jsApi);
@@ -66,6 +70,8 @@ class ReefStateApi {
     transferApi = TransferApi(_jsApi);
     signingApi = SigningApi(_jsApi);
     swapApi = SwapApi(_jsApi);
+    firebaseApi = FirebaseApi(_jsApi);
+    metadataApi = MetadataApi(_jsApi);
   }
 
   init(ReefNetowrk network, List<ReefAccount> accounts) async {

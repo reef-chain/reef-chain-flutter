@@ -9,6 +9,11 @@ class SwapApi {
 
   SwapApi(this._jsApi);
 
+  Future<dynamic> swapTokens(String signerAddress,dynamic mappedToken1,dynamic mappedToken2,dynamic settings)async{
+    return _jsApi.jsObservable(
+        'window.swap.execute("$signerAddress", ${jsonEncode(mappedToken1)}, ${jsonEncode(mappedToken2)}, ${jsonEncode(settings.toJson())})');
+  }
+
   Future<dynamic> getPoolReserves(
       String token1Address, String token2Address) async {
     return _jsApi
@@ -16,7 +21,7 @@ class SwapApi {
   }
 
   dynamic getSwapAmount(String tokenAmount, bool buy,
-      TokenWithAmount token1Reserve, TokenWithAmount token2Reserve) {
+      dynamic token1Reserve, dynamic token2Reserve) {
     return _jsApi.jsCall(
         'window.swap.getSwapAmount($tokenAmount, $buy, ${jsonEncode(token1Reserve.toJsonSkinny())}, ${jsonEncode(token2Reserve.toJsonSkinny())})');
   }
