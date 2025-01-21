@@ -6,17 +6,11 @@ class NetworkApi {
 
   NetworkApi(this._jsApi);
 
-  Future<void> setNetwork(Network network) async {
-    final networkName = network.name;
-    if (networkName != null && networkName.isNotEmpty) {
-      await _jsApi.jsCallVoidReturn('window.utils.setSelectedNetwork("$networkName")');
-    } else {
-      throw ArgumentError('Network name cannot be null or empty.');
-    }
+  Future<void> setNetwork(String network) async {
+      await _jsApi.jsCallVoidReturn('window.utils.setSelectedNetwork("$network")');
   }
 
-  Stream<dynamic> selectedNetwork() {
-    return _jsApi.jsObservable('window.reefState.selectedNetwork\$');
-  }
+  Stream get selectedNetwork$ =>_jsApi
+        .jsObservable('window.reefState.selectedNetwork\$');
 
 }
