@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -21,10 +22,15 @@ import 'network/ws-conn-state.dart';
 class ReefChainApi {
   late JsApiService _jsApi;
   late ReefStateApi _reefStateApi;
+  final ready = Completer<void>();
 
 
   ReefChainApi() {
     _jsApi = JsApiService.reefAppJsApi();
+    _jsApi.jsApiReady.future.then((_)=>this.ready.complete());
+    if (_jsApi.jsApiReady.isCompleted) {
+      this.ready.complete();
+    }
     _reefStateApi = ReefStateApi(_jsApi);
     _initReefObservables(_jsApi);
   }
