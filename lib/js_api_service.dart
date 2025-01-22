@@ -32,13 +32,13 @@ class JsApiService {
   final REEF_MOBILE_CHANNEL_NAME = 'reefMobileChannel';
   final FLUTTER_SUBSCRIBE_METHOD_NAME = 'flutterSubscribe';
 
-  late final WebViewController controller;
-
-  final controllerInit = Completer<WebViewController>();
-  final jsApiLoaded = Completer<WebViewController>();
+  late final WebViewController _controller;
 
   // when web page loads
-  final jsApiReady = Completer<WebViewController>();
+  final _jsPageLoaded = Completer<void>();
+  // when stream notifies ready with event
+  final _jsStreamReady = Completer<void>();
+  late final jsApiReady = Completer<void>();
 
   final jsMessageSubj = BehaviorSubject<JsApiMessage>();
   final jsTxSignatureConfirmationMessageSubj = BehaviorSubject<JsApiMessage>();
@@ -49,6 +49,7 @@ class JsApiService {
 
   JsApiService._(String this.flutterJsFilePath,
       {String? url, String? html, Function()? onErrorCb}) {
+    Future.wait([this._jsPageLoaded.future, this._jsStreamReady.future]).then(this.jsApiReady.complete);
     // #docregion platform_features
     var ctrl = _createController();
     // #enddocregion platform_features
@@ -56,7 +57,7 @@ class JsApiService {
     // print('JS API SERVICE CREATE $flutterJsFilePath');
     _renderWithFlutterJS(ctrl, flutterJsFilePath, html, url)
         .then((v) => debugPrint("WV controller set"));
-    this.controller = ctrl;
+    this._controller = ctrl;
     this.onJsConnectionError = onErrorCb;
   }
 
@@ -86,6 +87,15 @@ class JsApiService {
 
     var controller = WebViewController.fromPlatformCreationParams(params);
 
+    controller.setOnConsoleMessage((JavaScriptConsoleMessage consoleMessage) {
+      debugPrint(
+          '== JS LOG == ${consoleMessage.level.name}: ${consoleMessage.message}');
+    });
+
+    _getJavascriptChannels().forEach((jsChanParam) =>
+        controller.addJavaScriptChannel(jsChanParam.name,
+            onMessageReceived: jsChanParam.onMessageReceived));
+
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
@@ -97,7 +107,8 @@ class JsApiService {
             debugPrint('Page started loading: $url');
           },
           onPageFinished: (String url) {
-            debugPrint('Page finished loading: $url');
+            debugPrint('!!!!!!!!!! Page finished loading: $url');
+            _jsPageLoaded.complete();
           },
           onWebResourceError: (WebResourceError error) {
             debugPrint('''
@@ -129,16 +140,7 @@ Page resource error:
         ),
       );
 
-    controller.setOnConsoleMessage((JavaScriptConsoleMessage consoleMessage) {
-      debugPrint(
-          '== JS == ${consoleMessage.level.name}: ${consoleMessage.message}');
-    });
-
-    _getJavascriptChannels().forEach((jsChanParam) =>
-        controller.addJavaScriptChannel(jsChanParam.name,
-            onMessageReceived: jsChanParam.onMessageReceived));
-
-    debugPrint("js controller set");
+    debugPrint("!!!! js controller set");
 
     return controller;
   }
@@ -153,12 +155,15 @@ Page resource error:
 
   // for js methods with no return value
   Future<void> jsCallVoidReturn(String executeJs) {
-    return controller.runJavaScript(executeJs);
+    return _controller.runJavaScript(executeJs);
   }
 
   Future<dynamic> jsCall<T>(String executeJs) async {
     try {
-      dynamic res = await controller.runJavaScriptReturningResult(executeJs);
+      if (!jsApiReady.isCompleted){
+        await jsApiReady.future;
+      }
+      dynamic res = await _controller.runJavaScriptReturningResult(executeJs);
       return T == bool ? resolveBooleanValue(res) : res;
     } catch (e) {
       print('JS LOST ctrl ERROR=${e.toString()}');
@@ -267,7 +272,9 @@ Page resource error:
           if (apiMsg.streamId == LOG_STREAM_ID) {
             print('$LOG_STREAM_ID= ${apiMsg.value}');
           } else if (apiMsg.streamId == API_READY_STREAM_ID) {
-            jsApiLoaded.future.then((ctrl) => jsApiReady.complete(ctrl));
+            debugPrint("!!!!! JS STREAM READY");
+            _jsStreamReady.complete();
+            // jsApiLoaded.future.then((ctrl) => jsApiReady.complete(ctrl));
           } else if (apiMsg.streamId == TX_SIGNATURE_CONFIRMATION_STREAM_ID) {
             jsTxSignatureConfirmationMessageSubj.add(apiMsg);
           } else if (apiMsg.streamId == DAPP_MSG_CONFIRMATION_STREAM_ID) {

@@ -8,13 +8,13 @@ class TransferApi {
   TransferApi(this._jsApi);
 
   Stream<dynamic> transferTokensStream(
-      String fromAddress, String toAddress, TokenWithAmount token) {
+      String fromAddress, String toAddress, dynamic token) {
     return _jsApi.jsObservable(
         'window.transfer.sendObs("$fromAddress", "$toAddress", "${token.amount.toString()}", ${token.decimals}, "${token.address}")');
   }
 
   Future<dynamic> transferTokens(
-      String fromAddress, String toAddress, TokenWithAmount token) async {
+      String fromAddress, String toAddress, dynamic token) async {
     return _jsApi.jsPromise(
         'window.transfer.sendPromise("$fromAddress", "$toAddress", "${token.amount.toString()}", ${token.decimals}, "${token.address}")');
   }

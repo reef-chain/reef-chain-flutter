@@ -27,4 +27,43 @@ class TokensApi {
     });
 
   }
+
+   Future<dynamic> getNftInfo(String nftId, String ownerAddress) async {
+      return _jsApi.jsPromise('window.utils.getNftInfo("$nftId","$ownerAddress")');
+    }
+
+   Future<dynamic> reloadTokens() async {
+     return _jsApi.jsCallVoidReturn('window.reefState.reloadTokens()');
+    }
+
+  Future<dynamic> findToken(String address) async {
+    return _jsApi.jsPromise('window.utils.findToken("$address")');
+  }
+
+  Future<dynamic> getTxInfo(String timestamp) async {
+    return _jsApi.jsPromise('window.utils.getTxInfo("$timestamp")');
+  }
+
+  Future<dynamic> getPools(dynamic offset) async {
+    return _jsApi.jsPromise('window.utils.getPools(10,${offset},"","")');
+  }
+
+  Future<dynamic> getPoolPairs(String tokenAddress) async {
+    return _jsApi.jsPromise('window.utils.getPoolPairs("${tokenAddress}")');
+  }
+  Future<dynamic> getTokenInfo(String tokenAddress) async {
+    return _jsApi.jsPromise('window.utils.getTokenInfo("${tokenAddress}")');
+  }
+
+  Stream get selectedTransactionHistory$=> _jsApi
+        .jsObservable('window.reefState.selectedTransactionHistory_status\$');
+
+  Stream get reefPrice$=> _jsApi.jsObservable('window.tokenUtil.reefPrice\$');
+
+  Stream get selectedNFTs_status$=> _jsApi
+        .jsObservable('window.reefState.selectedNFTs_status\$');
+  
+  Stream get selectedTokenPrices_status$=> _jsApi
+        .jsObservable('window.reefState.selectedTokenPrices_status\$');
+  
 }

@@ -33,6 +33,20 @@ Future<String> formatBalance(
         }
   }
 
+  Stream availableSignersStream() {
+    return _jsApi.jsObservable('window.reefState.accounts\$');
+  }
+
+  Stream availableAccounts(){
+    return _jsApi
+        .jsObservable('window.reefState.accounts_status\$');
+  }
+
+  Future<void> updateAccounts(dynamic accounts)async{
+    return await _jsApi
+        .jsPromise('window.account.updateAccounts(${jsonEncode(accounts)})');
+  }
+
   Future<dynamic> listenBindActivity(String address) async {
   StreamController<dynamic> controller = StreamController<dynamic>();
 
@@ -45,6 +59,12 @@ Future<String> formatBalance(
 
   return controller.stream.first;
 }
+
+Stream<dynamic> get selectedAddressStream => 
+      _jsApi.jsObservable('window.reefState.selectedAddress\$');
+
+Stream<dynamic> get accountsStatus$ => 
+      _jsApi.jsObservable('window.reefState.accounts_status\$');
 
 
   Future<dynamic> exportAccountQr(String address, String password) async {
@@ -122,5 +142,8 @@ Future<String> formatBalance(
     return await _jsApi
         .jsCall('window.account.toReefEVMAddressNoNotification("$evmAddress")');
   }
+
+
+  
 
 }
