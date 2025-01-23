@@ -1,6 +1,6 @@
 name: reef_chain_flutter
 description: "Reef chain Dart calls for easy Flutter integration."
-version: 0.0.3
+version: 0.0.4
 
 environment:
   sdk: ^3.6.0
