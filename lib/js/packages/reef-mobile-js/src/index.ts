@@ -20,7 +20,6 @@ window['stealthex'] = Stealthex;
 window['getReefJsVer'] = ()=>({reefAppJs:'0.0.1', utilLib:version});
 window['isJsConn'] = ()=>{return true};
 
-
 window['testObs'] = ()=> interval(1000).pipe(
         map((value) => {
             return {value, msg: 'hey flutter'}
