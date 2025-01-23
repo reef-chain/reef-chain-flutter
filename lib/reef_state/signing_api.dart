@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:reef_chain_flutter/reef_state/token/token_with_amount.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../js_api_service.dart';
 
@@ -12,6 +13,17 @@ class SigningApi {
 
   Future<dynamic> signRaw(String address, String message) =>
       _jsApi.jsPromise('window.signApi.signRawPromise(`$address`, `$message`);');
+
+  Stream get jsTxSignatureConfirmationMessageSubj=> _jsApi.jsTxSignatureConfirmationMessageSubj;
+
+  void confirmTxSignature(String reqId, String? mnemonic) {
+    _jsApi.confirmTxSignature(reqId, mnemonic);
+  }
+
+  void rejectTxSignature(String signatureIdent) {
+    _jsApi.rejectTxSignature(signatureIdent);
+  }
+
 
   Future<dynamic> signPayload(String address, Map<String, dynamic> payload) =>
       _jsApi.jsPromise(
