@@ -79,7 +79,10 @@ export const innitApi = (signingKey: Signer) => {
                             address,
                             type: reefState.UpdateDataType.ACCOUNT_NATIVE_BALANCE,
                         } as reefState.UpdateAction);
-                        reefState.onTxUpdateResetSigners({isInBlock: true, txTypeEvm: false}, updateActions);
+                        reefState.onTxUpdateResetSigners({
+                            isInBlock: true, txTypeEvm: false,
+                            txIdent: ''
+                        }, updateActions);
                         return true;
                     } catch (e) {
                         console.log('account.claimEvmAccount() - ', e.message);
@@ -114,7 +117,7 @@ export const innitApi = (signingKey: Signer) => {
 
         listenBindActivity: (address: string) => {
             return network.getLatestBlockAccountUpdates$([address])
-        }        
+        }
     };
 }
 
