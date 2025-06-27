@@ -55,7 +55,7 @@ class ReefChainApi {
 }
 
 class ReefStateApi {
-  final JsApiService _jsApi;
+  final JsApiService jsApi;
   bool _inited = false;
   late final TokensApi tokenApi;
   late final AccountApi accountApi;
@@ -68,17 +68,17 @@ class ReefStateApi {
   late final FirebaseApi firebaseApi;
   late final MetadataApi metadataApi;
 
-  ReefStateApi(this._jsApi) {
-    tokenApi = TokensApi(_jsApi);
-    accountApi = AccountApi(_jsApi);
-    networkApi = NetworkApi(_jsApi);
-    stealthexApi = StealthexApi(_jsApi);
-    poolsApi = PoolsApi(_jsApi);
-    transferApi = TransferApi(_jsApi);
-    signingApi = SigningApi(_jsApi);
-    swapApi = SwapApi(_jsApi);
-    firebaseApi = FirebaseApi(_jsApi);
-    metadataApi = MetadataApi(_jsApi);
+  ReefStateApi(this.jsApi) {
+    tokenApi = TokensApi(jsApi);
+    accountApi = AccountApi(jsApi);
+    networkApi = NetworkApi(jsApi);
+    stealthexApi = StealthexApi(jsApi);
+    poolsApi = PoolsApi(jsApi);
+    transferApi = TransferApi(jsApi);
+    signingApi = SigningApi(jsApi);
+    swapApi = SwapApi(jsApi);
+    firebaseApi = FirebaseApi(jsApi);
+    metadataApi = MetadataApi(jsApi);
   }
 
   init(ReefNetowrk network, List<ReefAccount> accounts) async {
@@ -86,7 +86,7 @@ class ReefStateApi {
       return;
     }
     _inited = true;
-    await _jsApi.jsPromise(
+    await jsApi.jsPromise(
         'window.jsApi.initReefState("${network}", ${jsonEncode(
             accounts)})');
   }
