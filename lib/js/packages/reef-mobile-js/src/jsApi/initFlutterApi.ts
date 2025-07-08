@@ -1,6 +1,7 @@
 import * as accountApi from "./accountApi";
 import {buildAccountWithMeta} from "./accountApi";
 import * as transferApi from "./transferApi";
+import * as contractApi from "./contractApi";
 import * as swapApi from "./swapApi";
 import * as signApi from "./signApi";
 import * as utilsApi from "./utilsApi";
@@ -50,6 +51,7 @@ export const initFlutterApi = async (flutterJS: FlutterJS) => {
         };
         // testReefObservables();
         accountApi.innitApi(signingKey);
+        contractApi.initApi(signingKey);
         transferApi.initApi(signingKey);
         swapApi.initApi(signingKey);
         signApi.initApi(signingKey);
