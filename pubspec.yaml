@@ -1,6 +1,6 @@
 name: reef_chain_flutter
 description: "Reef chain Dart calls for easy Flutter integration."
-version: 0.0.6
+version: 0.0.7
 
 environment:
   sdk: ^3.6.0
@@ -55,3 +55,4 @@ flutter:
   #
   # For details regarding fonts in packages, see
   # https://flutter.dev/to/font-from-package
+repository: https://github.com/reef-chain/reef-chain-flutter
