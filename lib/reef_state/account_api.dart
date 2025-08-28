@@ -23,10 +23,10 @@ class AccountApi {
   }
 
 Future<String> formatBalance(
-      String value, double price) async {
+      String value, double price,int decimals) async {
         try {   
     return await _jsApi.jsPromise(
-        'window.keyring.formatBalance("$value",$price)');
+        'window.keyring.formatBalance("$value",$price,$decimals)');
         } catch (e) {
           print('window.keyring.formatBalance ERR=$e');
           return "";
